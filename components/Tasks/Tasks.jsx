@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./styles.module.css";
 import Card from "../Card/Card";
@@ -6,6 +6,11 @@ import Card from "../Card/Card";
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [task, setTask] = useState("");
+  const [password, setPassword] = useState("");
+  const [isPasswordValid, setPasswordValid] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  const inputRef = useRef();
 
   useEffect(() => {
     const localStorageTasks = localStorage.getItem("tasks");
@@ -56,12 +61,51 @@ const Tasks = () => {
     });
   };
 
+  // =====================
+
+  useEffect(() => {
+    console.log("hitttt");
+  }, [task]);
+
+  const hasSpecialSymbolRegex = /[!@#$%^&*(),.?":{}|<>]/;
+
+  const validatePassword = () => {
+    if (password.length < 8) {
+      setPasswordValid(false);
+      setErrorMessage("Password is too short");
+      return;
+    }
+
+    if (!hasSpecialSymbolRegex.test(password)) {
+      setPasswordValid(false);
+      setErrorMessage("Password does not contain special symbol");
+      return;
+    }
+
+    setPasswordValid(true);
+    setErrorMessage("");
+  };
+
+  useEffect(() => {
+    if (password.length > 0) {
+      validatePassword();
+    }
+  }, [password]);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  //======================
+
   return (
     <div className={styles.main}>
       <h1>to do app</h1>
-
       <div className={styles.form}>
         <input
+          ref={inputRef}
           placeholder="task"
           value={task}
           onChange={(e) => {
@@ -70,7 +114,6 @@ const Tasks = () => {
         />
         <button onClick={onAddTask}>Add task</button>
       </div>
-
       <div className={styles.tasks}>
         {tasks.length >= 1 ? (
           tasks.map((t) => {
@@ -89,6 +132,17 @@ const Tasks = () => {
           <div>No tasks yet</div>
         )}
       </div>
+      <br />
+      <br /> <br />
+      <input
+        placeholder="password"
+        value={password}
+        onChange={(e) => {
+          setPassword(e.target.value);
+        }}
+      />
+      <div>{isPasswordValid ? <>valid</> : <>invalid</>} </div>
+      <div>{errorMessage}</div>
     </div>
   );
 };
